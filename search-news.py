@@ -34,7 +34,6 @@ for item in articles:
 
     try:
         newsitem = item.find('.mCBkyc.y355M.ynAwRc.MBeuO.nDgy9d', first=True)
-        print(newsitem)
         title = newsitem.text
         time = item.find('.OSrXXb', first=True).text
         description = item.find('.GI74Re', first=True).text
@@ -46,6 +45,9 @@ for item in articles:
         newslist.append(newsarticle)
     except:
        pass
+
+#ends process
+session.close()
 
 #print the length of the list
 print(newslist)
