@@ -7,14 +7,14 @@ import pandas as pd
 # list of individuals we are querying
 search_list = pd.read_csv("search-list.csv")
 
+#Google
+session = HTMLSession()
+
 for x in range(len(search_list.index)):
 
     #use session to get the page
     #Duckduckgo
     #r = session.get('https://duckduckgo.com/?q=robert+downey+jr&atb=v314-1&iar=news&ia=news')
-
-    #Google
-    session = HTMLSession()
 
     #retrieve URL link for each individual
     r = session.get(search_list["URL"][x])
@@ -76,9 +76,8 @@ for x in range(len(search_list.index)):
         articles = r.html.find('a.WlydOe')
         time.sleep(2)
 
-    #ends process
-    session.close()
-
     df = pd.DataFrame(newslist)
     df.to_csv(search_list["Name"][x]+'.csv')
 
+#ends process
+session.close()
