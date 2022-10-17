@@ -19,6 +19,11 @@ for x in range(len(search_list.index)):
     #retrieve URL link for each individual
     r = session.get(search_list["URL"][x])
 
+    if (r == '<Response [429]>'):
+        print("Kenna caught liao error at ")
+        print(search_list["URL"][x])
+        break
+
     #Rendering of page
     r.html.render(sleep=1, scrolldown=2)
 
@@ -77,7 +82,7 @@ for x in range(len(search_list.index)):
             articles = r.html.find('a.WlydOe')
             time.sleep(2)
         except:
-            print("error")
+            print("Error no next page for: ")
             print(search_list["URL"][x])
             print("---")
             pass
