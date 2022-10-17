@@ -65,16 +65,22 @@ for x in range(len(search_list.index)):
             except:
                 pass
 
-        #Proceeding to next page
-        nextPage = r.html.find('.d6cvqb.BBwThe')[-1]
-        nextPageURL = nextPage.find('a', first=True).attrs['href']
-        nextPageURL = 'https://www.google.com' + nextPageURL
-        r = session.get(nextPageURL)
+        try:
+            #Proceeding to next page
+            nextPage = r.html.find('.d6cvqb.BBwThe')[-1]
+            nextPageURL = nextPage.find('a', first=True).attrs['href']
+            nextPageURL = 'https://www.google.com' + nextPageURL
+            r = session.get(nextPageURL)
 
-        #Render and sleep to prevent ban
-        r.html.render(sleep=1, scrolldown=2)
-        articles = r.html.find('a.WlydOe')
-        time.sleep(2)
+            #Render and sleep to prevent ban
+            r.html.render(sleep=1, scrolldown=2)
+            articles = r.html.find('a.WlydOe')
+            time.sleep(2)
+        except:
+            print("error")
+            print(search_list["URL"][x])
+            print("---")
+            pass
 
     df = pd.DataFrame(newslist)
     df.to_csv(search_list["Name"][x]+'.csv')
