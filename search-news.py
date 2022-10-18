@@ -33,7 +33,7 @@ for x in range(len(search_list.index)):
     newslist = []
 
     #number of pages to scrap
-    numberOfPage = 5
+    numberOfPage = 10
 
     for i in range(numberOfPage):
         
