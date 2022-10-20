@@ -3,92 +3,158 @@ from requests_html import HTMLSession
 import time
 import pandas as pd
 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
-# list of individuals we are querying
-search_list = pd.read_csv("search-list.csv")
+def newsscrap(choice):
 
-#Google
-session = HTMLSession()
+    # Selection Choice Settings
 
-for x in range(len(search_list.index)):
+    # Google
+    if choice == 1:
+        mainContainerDiv = 'a.WlydOe'
+        articleContainerDiv = '.mCBkyc.y355M.ynAwRc.MBeuO.nDgy9d'
+        articleTimeDiv = '.OSrXXb'
+        descriptionDiv = '.GI74Re'
 
-    #use session to get the page
-    #Duckduckgo
-    #r = session.get('https://duckduckgo.com/?q=robert+downey+jr&atb=v314-1&iar=news&ia=news')
+    elif choice == 2:
+        mainContainerDiv = '.result__body'
+        articleContainerDiv = 'h2'
+        articleTimeDiv = '.result__timestamp'
+        descriptionDiv = '.result__snippet'
 
-    #retrieve URL link for each individual
-    r = session.get(search_list["URL"][x])
+    # list of individuals we are querying
+    search_list = pd.read_csv("search-list.csv")
 
-    if (r == '<Response [429]>'):
-        print("Kenna caught liao error at ")
-        print(search_list["URL"][x])
-        break
+    session = HTMLSession()
+    
+    # Looping of search list
+    for x in range(len(search_list.index)):
+        #retrieve URL link for each individual
+        r = session.get(search_list["URL"][x])
 
-    #Rendering of page
-    r.html.render(sleep=1, scrolldown=2)
-
-    articles = r.html.find('a.WlydOe')
-
-    #list of result
-    newslist = []
-
-    #number of pages to scrap
-    numberOfPage = 10
-
-    for i in range(numberOfPage):
-        
-        for item in articles:
-        ##    #Duck duck go
-        ##    try:
-        ##        newsitem = item.find('h2', first=True)
-        ##        title = newsitem.text
-        ##        link = newsitem.absolute_links
-        ##        articleTime = item.find('.result__timestamp', first=True).text
-        ##        description = item.find('.result__snippet', first=True).text
-        ##        newsarticle = {
-        ##            'title': title,
-        ##            'link': link,
-        ##            'time': articleTime,
-        ##            'description' : description
-        ##        }
-        ##        newslist.append(newsarticle)
-        ##    except:
-        ##       pass
-            
-            # Google
-            try:
-                newsitem = item.find('.mCBkyc.y355M.ynAwRc.MBeuO.nDgy9d', first=True)
-                title = newsitem.text
-                articleTime = item.find('.OSrXXb', first=True).text
-                description = item.find('.GI74Re', first=True).text
-                newsarticle = {
-                    'title': title,
-                    'time': articleTime,
-                    'description' : description
-                }
-                newslist.append(newsarticle)
-            except:
-                pass
-
-        try:
-            #Proceeding to next page
-            nextPage = r.html.find('.d6cvqb.BBwThe')[-1]
-            nextPageURL = nextPage.find('a', first=True).attrs['href']
-            nextPageURL = 'https://www.google.com' + nextPageURL
-            r = session.get(nextPageURL)
-
-            #Render and sleep to prevent ban
-            r.html.render(sleep=1, scrolldown=2)
-            articles = r.html.find('a.WlydOe')
-            time.sleep(2)
-        except:
-            print("Error no next page for: ")
+        if (r == '<Response [429]>'):
+            print("Please scrap again later, response 429")
             print(search_list["URL"][x])
-            print("---")
-            pass
+            break
 
-    df = pd.DataFrame(newslist)
-    df.to_csv(search_list["Name"][x]+'.csv')
+        #Rendering of page
+        r.html.render(sleep=1, scrolldown=2)
 
-#ends process
-session.close()
+        articles = r.html.find(mainContainerDiv)
+
+        #list of result
+        newslist = []
+
+        #number of pages to scrap
+        numberOfPage = 1
+
+        for i in range(numberOfPage):
+            
+            for item in articles:
+                print(item)
+                try:
+                    newsitem = item.find(articleContainerDiv, first=True)
+                    title = newsitem.text
+                    articleTime = item.find(articleTimeDiv, first=True).text
+                    description = item.find(descriptionDiv, first=True).text
+                    newsarticle = {
+                        'title': title,
+                        'time': articleTime,
+                        'description' : description
+                    }
+                    newslist.append(newsarticle)
+                except:
+                    print("error 2")
+                    pass
+            
+            if choice == 1:
+                try:
+                    #Proceeding to next page
+                    nextPage = r.html.find('.d6cvqb.BBwThe')[-1]
+                    nextPageURL = nextPage.find('a', first=True).attrs['href']
+                    nextPageURL = 'https://www.google.com' + nextPageURL
+                    r = session.get(nextPageURL)
+
+                    #Render and sleep to prevent ban
+                    r.html.render(sleep=1, scrolldown=2)
+                    articles = r.html.find('a.WlydOe')
+                    time.sleep(2)
+                except:
+                    print("Error no next page for: ")
+                    print(search_list["URL"][x])
+                    print("---")
+                    pass
+
+        df = pd.DataFrame(newslist)
+        df.to_csv(search_list["Name"][x]+'.csv')
+
+    #ends process
+    session.close()
+
+
+def ddg():
+    driver = webdriver.Chrome(executable_path='PATH HERE')
+
+    mainContainerDiv = '.result__body'
+    articleContainerDiv = 'h2'
+    articleTitleDiv = '.result__title'
+    articleTimeDiv = '.result__timestamp'
+    descriptionDiv = '.result__snippet'
+    buttonMore = '.result--more__btn'
+
+    search_list = pd.read_csv("search-list.csv")
+
+    for x in range(len(search_list.index)):
+        newslist = []
+        articleCounter = 0
+        driver.get(search_list["URL"][x])
+
+        driver.implicitly_wait(3)
+
+        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+        time.sleep(3)
+        driver.find_element(By.CSS_SELECTOR, buttonMore).click();
+
+        for result in driver.find_elements(By.CSS_SELECTOR, mainContainerDiv):
+            title = result.find_element(By.CSS_SELECTOR, articleTitleDiv).text
+            articleTime = result.find_element(By.CSS_SELECTOR, articleTimeDiv).text
+            description = result.find_element(By.CSS_SELECTOR, descriptionDiv).text
+
+            newsarticle = {
+                'title': title,
+                'time': articleTime,
+                'description' : description
+            }
+
+            newslist.append(newsarticle)
+
+            articleCounter += 1
+
+        print(search_list["URL"][x] + ' ended')
+        df = pd.DataFrame(newslist)
+        df.to_csv(search_list["Name"][x]+'.csv')
+
+# Main Run
+while True:
+    try:
+        print("1 - for Google News Search")
+        print("2 - for Duck Duck Go News Search")
+        searchEchoice = int(input("Enter Choice: "))
+
+        if searchEchoice == 1:
+            newsscrap(searchEchoice)
+            print("---------------")
+            print("Scrapping done")
+            break
+
+        elif searchEchoice == 2:
+            ddg()
+            print("---------------")
+            print("Scrapping done")
+            break
+        else:
+            print("Invalid choice")
+
+    except ValueError:
+        print("Invalid choice")
