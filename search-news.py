@@ -93,15 +93,23 @@ def newsscrap(choice):
     session.close()
 
 
-def ddg():
+def seln(searchEchoice):
     driver = webdriver.Chrome(executable_path='PATH HERE')
 
-    mainContainerDiv = '.result__body'
-    articleContainerDiv = 'h2'
-    articleTitleDiv = '.result__title'
-    articleTimeDiv = '.result__timestamp'
-    descriptionDiv = '.result__snippet'
-    buttonMore = '.result--more__btn'
+    if searchEchoice == 2:
+        mainContainerDiv = '.result__body'
+        articleContainerDiv = 'h2'
+        articleTitleDiv = '.result__title'
+        articleTimeDiv = '.result__timestamp'
+        descriptionDiv = '.result__snippet'
+        buttonMore = '.result--more__btn'
+    
+    elif searchEchoice == 3:
+        mainContainerDiv = '.NewsArticle'
+        articleTitleDiv = '.s-title a'
+        articleTimeDiv = '.s-time'
+        descriptionDiv = '.s-desc'
+        buttonMore = '.compPagination a.next'
 
     search_list = pd.read_csv("search-list.csv")
 
@@ -114,22 +122,33 @@ def ddg():
 
         driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
         time.sleep(3)
-        driver.find_element(By.CSS_SELECTOR, buttonMore).click();
 
-        for result in driver.find_elements(By.CSS_SELECTOR, mainContainerDiv):
-            title = result.find_element(By.CSS_SELECTOR, articleTitleDiv).text
-            articleTime = result.find_element(By.CSS_SELECTOR, articleTimeDiv).text
-            description = result.find_element(By.CSS_SELECTOR, descriptionDiv).text
+        while articleCounter < 100:
+            for result in driver.find_elements(By.CSS_SELECTOR, mainContainerDiv):
+                title = result.find_element(By.CSS_SELECTOR, articleTitleDiv).text
+                articleTime = result.find_element(By.CSS_SELECTOR, articleTimeDiv).text
+                description = result.find_element(By.CSS_SELECTOR, descriptionDiv).text
 
-            newsarticle = {
-                'title': title,
-                'time': articleTime,
-                'description' : description
-            }
+                newsarticle = {
+                    'title': title,
+                    'time': articleTime,
+                    'description' : description
+                }
 
-            newslist.append(newsarticle)
+                newslist.append(newsarticle)
 
-            articleCounter += 1
+                articleCounter += 1
+            
+            try:
+                if articleCounter < 100:
+                    nextbtn = driver.find_element(By.CSS_SELECTOR, buttonMore);
+                    nextbtn.click()
+                    print("Next Page")
+                    time.sleep(5);
+                    driver.implicitly_wait(3)
+            except:
+                print("No next page")
+                break
 
         print(search_list["URL"][x] + ' ended')
         df = pd.DataFrame(newslist)
@@ -140,6 +159,7 @@ while True:
     try:
         print("1 - for Google News Search")
         print("2 - for Duck Duck Go News Search")
+        print("3 - for Yahoo News Search")
         searchEchoice = int(input("Enter Choice: "))
 
         if searchEchoice == 1:
@@ -149,7 +169,13 @@ while True:
             break
 
         elif searchEchoice == 2:
-            ddg()
+            seln(searchEchoice)
+            print("---------------")
+            print("Scrapping done")
+            break
+
+        elif searchEchoice == 3:
+            seln(searchEchoice)
             print("---------------")
             print("Scrapping done")
             break
