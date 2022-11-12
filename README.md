@@ -1,8 +1,9 @@
 # search-news-scrapper
  
-# Package required
+# Packages required
 - requestes-html
 - selenium
 
 # Remember
-- Change CHROMEDRIVER filedirectory
+- Change URLs in the search-list.csv
+- Change CHROMEDRIVER location filedirectory
